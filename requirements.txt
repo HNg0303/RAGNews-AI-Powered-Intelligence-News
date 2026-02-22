@@ -1,0 +1,8 @@
+streamlit
+pandas
+numpy
+pydantic
+fastapi
+uvicorn
+beautifulsoup4
+pydantic-settings

@@ -1,0 +1,3 @@
+1. CNN source:
+- Main page: They are organized the link to articles in <div> elements with attributes: data-component-name="container". Check for all <li> elements. If there exists =>
+Store all links.
