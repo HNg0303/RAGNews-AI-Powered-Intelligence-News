@@ -1,3 +1,6 @@
 1. CNN source:
 - Main page: They are organized the link to articles in <div> elements with attributes: data-component-name="container". Check for all <li> elements. If there exists =>
 Store all links.
+- Article page: They are organized into <title> for title, meta author and <p> tags with data-component-name = "paragraph". 
+    - <title>: The title of the newspaper
+    - <main class = "article__main"> -> Main content: <div data-component-name = "image"> -> Image. <p data-component-name = "paragraph"> -> content.
