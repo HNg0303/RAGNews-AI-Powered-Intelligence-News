@@ -4,3 +4,11 @@ Store all links.
 - Article page: They are organized into <title> for title, meta author and <p> tags with data-component-name = "paragraph". 
     - <title>: The title of the newspaper
     - <main class = "article__main"> -> Main content: <div data-component-name = "image"> -> Image. <p data-component-name = "paragraph"> -> content.
+
+2. Financial Post:
+- Articles card are organized under <div class="article-card__details"> -> Get all these tags and find <a -> get data-tb-link href, h3 -> title.
+- Get content: name = "main", id = "main-content"
+
+3. AP News:
+- Get Content: <div class = "Page-content" -> Title: <h1 class = "Page-headline"> text, <div class = "Page-twoColumn>
+ -> Image: <img src>, content: <p> 
