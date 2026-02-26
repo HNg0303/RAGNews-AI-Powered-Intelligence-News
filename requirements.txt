@@ -8,6 +8,7 @@ beautifulsoup4
 pydantic-settings
 pymilvus
 pymilvus[model]
+pymilvus[milvus_lite]
 langchain
 langchain-huggingface
 langchain-milvus
