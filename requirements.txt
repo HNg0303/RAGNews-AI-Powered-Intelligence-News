@@ -6,3 +6,11 @@ fastapi
 uvicorn
 beautifulsoup4
 pydantic-settings
+pymilvus
+pymilvus[model]
+langchain
+langchain-huggingface
+langchain-milvus
+langchain-text-splitters 
+langchain-community
+sentence-transformers
