@@ -1,4 +1,4 @@
-from embedder import Embedder
+from src.database.embedder import Embedder
 from langchain_community.vectorstores import Zilliz
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
