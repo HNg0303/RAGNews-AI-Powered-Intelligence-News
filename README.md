@@ -25,10 +25,7 @@ RAGNews combines web scraping, vector embeddings, and advanced language models t
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
-- [API Documentation](#api-documentation)
 - [Components](#components)
-- [Development](#development)
-- [Contributing](#contributing)
 - [License](#license)
 
 ## 🏗️ Architecture
@@ -251,21 +248,22 @@ print(setting.project_name)
 
 ## 🚀 Usage
 
-### Starting the FastAPI Server
-
-```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-The API will be available at `http://localhost:8000`
-- Swagger UI: `http://localhost:8000/docs`
-- ReDoc: `http://localhost:8000/redoc`
-
 ### Running the Streamlit Dashboard
 
+The project includes a Streamlit application with a polished UI (`app_1.py` in the repository; you may rename it to `app.py` if preferred) that provides an interactive interface with three pages:
+
+1. **Headlines (Home)** – Displays a grid of randomly selected articles from `data/raw_news`. Each card shows the article image (if available) with the headline overlaid. Click "Read more" to view the full article.
+2. **Article Detail** – Shows the title, main image, and full content of the selected article. A "Back to headlines" button returns you to the home page.
+3. **News Chatbot** – Chat interface powered by the RAG pipeline (`RAGChain`). Enter a natural language question about the news and receive a response with cited sources. Conversations are preserved during the session.
+
+To start the dashboard:
+
 ```bash
-streamlit run app.py  # Ensure you have a Streamlit app file
+streamlit run app.py
 ```
+
+The UI automatically scans `data/raw_news` recursively and will display any JSON articles you have scraped. Sample/demo articles are only used if no real data is found. Ensure you have populated `data/raw_news` (e.g. by running the scraper) and set up your `.env` with the required keys before using the chatbot.
+
 
 ### Web Scraping
 
@@ -313,36 +311,6 @@ rag = RAGChain(
 response = rag.query("What are the latest developments in technology?")
 print(response)
 ```
-
-## 📡 API Documentation
-
-### Core Endpoints
-
-#### Health Check
-```http
-GET /hello
-```
-
-**Response**:
-```json
-{
-  "message": "Hello, Project set up successfully"
-}
-```
-
-### Scraper Endpoints
-Available in `src/api/scraper/`
-
-- `POST /scrape/cnn` - Scrape CNN articles
-- `POST /scrape/apnews` - Scrape AP News articles
-- `POST /scrape/finance` - Scrape financial news
-
-### Query Endpoints
-- `POST /query` - Submit a query to the RAG system
-- `GET /articles` - Retrieve indexed articles
-
-Detailed API documentation available at `/docs` after starting the server.
-
 ## 🧠 Components
 
 ### Scraper Module (`scraper/`)
@@ -395,78 +363,9 @@ Handles news article collection from multiple sources with intelligent parsing a
 - Batch indexing
 - Update and deletion support
 
-### API Module (`src/api/`)
-
-**Router** (`router.py`):
-- FastAPI route definitions
-- Request/response validation
-- Error handling middleware
-- CORS configuration
-
-## 🛠️ Development
-
-### Running Tests
-
-```bash
-pytest tests/ -v
-```
-
-### Code Quality
-
-```bash
-# Formatting
-black src/ scraper/ core/
-
-# Linting
-flake8 src/ scraper/ core/
-
-# Type checking
-mypy src/ scraper/ core/
-```
-
-### Adding New News Sources
-
-1. Add extraction functions in `scraper/scrape.py`:
-
-```python
-def get_newsource_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
-    # Implementation
-    pass
-
-def extract_newsource_articles(soup: BeautifulSoup, article_id: str) -> Dict:
-    # Implementation
-    pass
-```
-
-2. Add API endpoint in `src/api/router.py`
-3. Update documentation
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these guidelines:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Code Style
-- Follow PEP 8
-- Use type hints
-- Document all public functions
-- Add docstrings for classes and methods
-
 ## 📄 License
 
 This project is licensed under the LICENSE file in the repository. See [LICENSE](LICENSE) for details.
-
-## 📞 Support
-
-For issues, questions, or suggestions:
-- Open an issue on GitHub
-- Check existing documentation in `/docs`
-- Review notebooks in `/notebooks` for examples
 
 ## 🔮 Future Roadmap
 
