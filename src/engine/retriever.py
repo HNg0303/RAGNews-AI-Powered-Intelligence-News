@@ -1,4 +1,4 @@
-from database.vector_store import VectorStore
+from src.database.vector_store import VectorStore
 from langchain_classic.retrievers.contextual_compression import ContextualCompressionRetriever
 from langchain_classic.retrievers.document_compressors import CrossEncoderReranker
 from langchain_community.cross_encoders import HuggingFaceCrossEncoder

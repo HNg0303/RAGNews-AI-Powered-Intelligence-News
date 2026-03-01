@@ -16,3 +16,4 @@ langchain-text-splitters
 langchain-community
 sentence-transformers
 cohere
+langchain-google-genai
