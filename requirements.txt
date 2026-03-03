@@ -18,3 +18,4 @@ sentence-transformers
 cohere
 langchain-google-genai
 python-dotenv
+selenium

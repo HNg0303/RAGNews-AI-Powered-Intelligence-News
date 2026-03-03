@@ -28,8 +28,6 @@ if __name__ == "__main__":
     # Connect to CLOUD ZILLIZ built upon Milvus.
     ZILLIZ_CLOUD_URI = os.getenv("ZILLIZ_CLOUD_URI")
     ZILLIZ_CLOUD_API_KEY = os.getenv("ZILLIZ_CLOUD_API_KEY")
-
     vs = VectorStore(ZILLIZ_URI = ZILLIZ_CLOUD_URI, ZILLIZ_API_KEY=ZILLIZ_CLOUD_API_KEY)
     print(f"Successfully Connect to Zilliz Cloud VB\n\n")
-
     indexing(vs)

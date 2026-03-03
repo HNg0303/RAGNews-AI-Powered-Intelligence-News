@@ -9,10 +9,9 @@ def get_cnn_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
     articles = []
     # Search by attrs: traditional like href, link, ... While new attrs like data-* is processed below
     main_container = soup.find_all(name = "div", attrs= {"data-component-name": "container"}) 
-    for container in tqdm(main_container, desc = "Crawling articles"):
+    for container in tqdm(main_container, desc = "Crawling CNN articles"):
         if container:
             headline_articles = container.find_all(name = "li")
-            print(headline_articles)
             if headline_articles:
                 for article in headline_articles:
                     try:
@@ -28,14 +27,12 @@ def get_cnn_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
                         print("No attributes")
     return articles
 
-def extract_cnn_articles(article_soup: BeautifulSoup, article_id: str) -> Dict:
+def extract_cnn_articles(article_soup: BeautifulSoup, article_id: str, article_link: str) -> Dict:
     articles = {}
     try: 
         article_title = article_soup.find("title").text
         main_content = article_soup.find(name = "main", class_ = "article__main")
         article_images = main_content.find_all(name = "div", attrs={"data-component-name": "image"})
-        print(f"Article Images Section: {article_images}")
-        print("1")
         # Download Image
         if not os.path.exists(f"data/images/{article_id}"):
             os.makedirs(f"data/images/{article_id}")
@@ -44,14 +41,13 @@ def extract_cnn_articles(article_soup: BeautifulSoup, article_id: str) -> Dict:
             print(f"Image URL: {image_url}")
             download_image(image_url, f"data/images/{article_id}/image_{i}.jpg")
         article_paragraphs = main_content.find_all(name = "p", attrs={"data-component-name": "paragraph"})
-        print("2")
         article_content = ""
         for paragraph in article_paragraphs:
             article_content += paragraph.text
         articles["id"] =  article_id
         articles["title"] = article_title
         articles["content"] = article_content
-        print("3")
+        articles["source"] = article_link
         return articles
     except:
         print("Article not approriate !")
@@ -60,7 +56,7 @@ def extract_cnn_articles(article_soup: BeautifulSoup, article_id: str) -> Dict:
 def get_apnews_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
     articles = []
     subheader_top_stories = soup.find_all(name = "div", class_ = "Subheader-Top-Stories")
-    for top_stories in subheader_top_stories:
+    for top_stories in tqdm(subheader_top_stories, desc = "Crawling APNews Stories"):
         stories = top_stories.find_all(name = 'a')
         for story in stories:
             article_link = story.get("href")
@@ -71,7 +67,7 @@ def get_apnews_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
             })
     return articles
 
-def extract_apnews_articles(soup: BeautifulSoup, article_id: str):
+def extract_apnews_articles(soup: BeautifulSoup, article_id: str, article_link: str):
     article = {}
     try:
         content = ""
@@ -89,6 +85,7 @@ def extract_apnews_articles(soup: BeautifulSoup, article_id: str):
         article["id"] = article_id
         article["title"] = title
         article["content"] = content
+        article["source"] = article_link
         return article
     except Exception as e:
         print(f"Error: {e}")
@@ -97,8 +94,7 @@ def get_fp_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
     articles = []
     try:
         article_card = soup.find_all(name = "div", class_ = "article-card__details")
-        print(article_card)
-        for card in article_card:
+        for card in tqdm(article_card, desc = "Crawling FinancialPost articles"):
             article_related = card.find(name = "a", class_ = "article-card__link")
             if article_related:
                 article_link = article_related.get("href")
@@ -137,17 +133,36 @@ def extract_fp_articles(article_soup: BeautifulSoup):
     except Exception as e:
         print(f"Error: {e}")
 
-if __name__ == "__main__":
-    # Get news CNN article everyday
-    cnn_url = "https://edition.cnn.com"
-    links = get_cnn_articles(parse_soup(cnn_url), url = cnn_url)
-    with open("data/general/cnn.json", "w", encoding = "utf-8") as f:
-        json.dump(links, f, indent = 4)
-    all_articles = []
+def get_all_articles(urls: dict[str, str]):
+    """
+        Input is dict of 
+            {
+                "news source": "source_url"
+            }
+    """
+    print(f"Getting articles for extracting!")
+    for source_name, source_url in urls.items():
+        if source_name == "cnn":
+            article_links = get_cnn_articles(parse_soup(source_url), url = source_url)
+            with open("data/general/cnn.json", "w", encoding = "utf-8") as f:
+                json.dump(article_links, f, indent = 4)
+        
+        if source_name == "apnews":
+            article_links = get_apnews_articles(parse_soup(source_url), url = source_url)
+            with open("data/general/apnews.json", "w", encoding = "utf-8") as f:
+                json.dump(article_links, f, indent = 4)
+        
+        if source_name == "fp":
+            article_links = get_fp_articles(parse_soup(source_url), url = source_url)
+            with open("data/finance/fp.json", "w", encoding = "utf-8") as f:
+                json.dump(article_links, f, indent = 4)
+
+def extract_all_articles(all_urls: dict[str, str]):
+    # all_articles = []
     all_sources = {
         "cnn": "data/general/cnn.json",
-        # "apnews": "data/general/apnews.json",
-        # "fp": "data/finance/fp.json",
+        "apnews": "data/general/apnews.json",
+        "fp": "data/finance/fp.json"
     }
     for name, source in all_sources.items():
         with open(f"{source}","r", encoding = "utf-8") as f:
@@ -155,31 +170,42 @@ if __name__ == "__main__":
         if name == "apnews":
             print(f"Extracting articles from APNews.\n")
             for article in tqdm(all_articles_link, desc = "Extracting APNews Articles"):
-                if not os.path.exists(f"data/news/{article['id']}.json"):
-                    article_result = extract_apnews_articles(parse_soup(article["article_link"]), article["id"])
-                    with open(f"data/news/{article['id']}.json", "w", encoding = "utf-8") as f:
-                        json.dump(article_result, f, indent = 4)
+                if not os.path.exists(f"data/raw_news/{article['id']}.json"):
+                    article_result = extract_apnews_articles(parse_soup(article["article_link"]), article["id"], article["article_link"])
+                    if article_result:
+                        with open(f"data/raw_news/{article['id']}.json", "w", encoding = "utf-8") as f:
+                            json.dump(article_result, f, indent = 4)
         
         elif name == "cnn":
             print(f"Extracting articles from CNN.\n")
             for article in tqdm(all_articles_link, desc = "Extracting CNN Articles"):
-                if not os.path.exists(f"data/news/{article['id']}.json"):
-                    article_result = extract_cnn_articles(parse_soup(article["article_link"]), article["id"])
+                if not os.path.exists(f"data/raw_news/{article['id']}.json"):
+                    article_result = extract_cnn_articles(parse_soup(article["article_link"]), article["id"], article["article_link"])
                     if article_result:
-                        with open(f"data/news/{article['id']}.json", "w", encoding = "utf-8") as f:
+                        with open(f"data/raw_news/{article['id']}.json", "w", encoding = "utf-8") as f:
                             json.dump(article_result, f, indent = 4)
 
         elif name == "fp":
             print(f"Extracting articles from Financial Post.\n")
             for article in tqdm(all_articles_link, desc = "Extracting Financial Post Articles"):
-                if not os.path.exists(f"data/news/{article['id']}.json"):
+                if not os.path.exists(f"data/raw_news/{article['id']}.json"):
                     article_result = extract_fp_articles(parse_soup(article["article_link"]))
-                    with open(f"data/news/{article['id']}.json", "w", encoding = "utf-8") as f:
+                    with open(f"data/raw_news/{article['id']}.json", "w", encoding = "utf-8") as f:
                         json.dump(article_result, f, indent = 4)
     print("Save all articles !")
-    # url = "https://apnews.com/article/trump-state-union-speech-economy-midterms-affordability-d31fc47a200d159a2d24833bd378ec56"
-    # article = extract_fp_articles(parse_soup(url))
-    # print(article)
+
+if __name__ == "__main__":
+    # Get new articles everyday
+    all_sources = {
+        "cnn": "https://edition.cnn.com",
+        "apnews": "https://apnews.com",
+        "fp": "https://financialpost.com"
+    }
+    extract_all_articles(all_sources)
+
+    
+
+    
     
 
 

@@ -68,13 +68,11 @@ class RAGChain():
             return f"Error processing query: {str(e)}"
         
 if __name__ == "__main__":
-
     load_dotenv()
     ZILLIZ_CLOUD_URI = os.getenv("ZILLIZ_CLOUD_URI")
     ZILLIZ_CLOUD_API_KEY = os.getenv("ZILLIZ_CLOUD_API_KEY")
 
     GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-
 
     rag_agent = RAGChain(embedding_model="BAAI/bge-base-en-v1.5",
                          reranking_model="BAAI/bge-reranker-base",
@@ -82,13 +80,10 @@ if __name__ == "__main__":
                          cloud_uri = ZILLIZ_CLOUD_URI,
                          cloud_api_key=ZILLIZ_CLOUD_API_KEY,
                          google_api_key = GOOGLE_API_KEY)
-    
-    print("RAG Agent setup successfully !")
-
-    query = "What is Trump planning to do today ?"
     rag_agent.init_chain()
+    print("RAG Agent setup successfully !")
+    query = "What is Trump planning to do today ?"
     result = rag_agent.invoke(query)
-
     print(f"Question: {query} \n\n\n Answer: {result}")
     
 
