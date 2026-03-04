@@ -6,6 +6,7 @@ from pathlib import Path
 import datetime
 
 from components.home import render_home
+from components.article import render_article
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -80,7 +81,7 @@ page = st.session_state.page
 
 if page == "home":
     render_home()
-# elif page == "article":
-#     render_article()
+elif page == "article":
+    render_article()
 # elif page == "chat":
 #     render_chat()

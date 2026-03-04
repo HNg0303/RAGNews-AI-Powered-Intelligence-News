@@ -17,9 +17,10 @@ def no_img_placeholder(height: int, emoji: str = "📄"):
         f'display:flex;align-items:center;justify-content:center;font-size:2.5rem;">{emoji}</div>'
     )
 
-def nav(page: str, article=None):
+def nav(page: str, article_id=None):
+    # Navigate to page
     st.session_state.page = page
-    if article is not None:
-        st.session_state.current_article = article
-    if page == "chat" and article is not None:
+    if article_id is not None:
+        st.session_state.current_article_id = article_id
+    if page == "chat" and article_id is not None:
         st.session_state.chat_history = []   # fresh chat per article

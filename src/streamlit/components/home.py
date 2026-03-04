@@ -4,8 +4,6 @@ import datetime
 from api.api import get_articles, get_image
 from helper import no_img_placeholder, strip_source, short_title, nav
 
-
-
 # ── PAGE: HOME ────────────────────────────────────────────────────────────────
 def render_home():
     today    = datetime.date.today()
@@ -49,7 +47,7 @@ def render_home():
     st.markdown('</div>', unsafe_allow_html=True)
 
     if st.button("Read full story →", key="hero_btn"):
-        nav("article", hero)
+        nav("article", hero["id"])
         st.rerun()
 
     # ── More Stories ──
@@ -74,7 +72,7 @@ def render_home():
             st.markdown('</div>', unsafe_allow_html=True)
 
             if st.button("Read →", key=f"card_{i}"):
-                nav("article", art)
+                nav("article", art["id"])
                 st.rerun()
 
 if __name__ == "__main__":
