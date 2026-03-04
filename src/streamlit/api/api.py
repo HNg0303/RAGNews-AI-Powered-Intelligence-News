@@ -15,7 +15,7 @@ def get_articles(url : str = "http://localhost:8000/api/article/get_articles"):
     except Exception as e:
         print(f"Error: {e}")
 
-def get_image(url : str = "http://localhost:8000/api/image", article_id: str = ""):
+def get_image(article_id: str, url : str = "http://localhost:8000/api/image"):
     try:
         response = requests.get(f"{url}/{article_id}")
         if response.status_code==200:
@@ -27,7 +27,7 @@ def get_image(url : str = "http://localhost:8000/api/image", article_id: str = "
     except Exception as e:
         print(f"Error: {e}")
 
-def get_article_by_id(url : str = "http://localhost:8000/api/article/get_article", article_id: str = ""):
+def get_article_by_id(article_id: str, url : str = "http://localhost:8000/api/article/get_article"):
     try:
         response = requests.get(f"{url}/{article_id}")
         if response.status_code==200:

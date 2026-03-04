@@ -11,7 +11,7 @@ app.include_router(router = routers, prefix="/api")
 app.add_middleware(
         CORSMiddleware,
         allow_credentials=True,
-        allow_origins=["localhost:3000"],
+        allow_origins=["localhost:3000", "localhost:8501"],
         allow_methods=["*"],
         allow_headers=["*"]
 )

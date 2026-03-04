@@ -1,7 +1,8 @@
 import streamlit as st
 import datetime
 
-from src.streamlit.api.api import get_articles, get_image
+from api.api import get_articles, get_image
+from helper import no_img_placeholder, strip_source, short_title, nav
 
 
 
@@ -13,7 +14,7 @@ def render_home():
     st.markdown(f"""
     <div class="masthead">
       <div class="dateline">{date_str}</div>
-      <h1>NewsFlow</h1>
+      <h1>RAGNews</h1>
       <div class="tagline">AI-Powered · Curated · Intelligent</div>
     </div>
     """, unsafe_allow_html=True)
@@ -32,10 +33,10 @@ def render_home():
     rest = articles[1:]
 
     # ── Hero ──
-    img_path = get_image(hero["id"])
+    imgs = get_image(hero["id"])
     st.markdown('<div class="hero-card">', unsafe_allow_html=True)
-    if img_path:
-        st.image(str(img_path), use_container_width=True)
+    if imgs:
+        st.image(str(imgs[0]["image_base64"]), use_container_width=True)
     else:
         st.markdown(no_img_placeholder(340, "📰"), unsafe_allow_html=True)
     st.markdown(f"""
@@ -58,10 +59,10 @@ def render_home():
     cols = st.columns(3)
     for i, art in enumerate(rest[:6]):
         with cols[i % 3]:
-            img_path = get_image_path(art["id"])
+            imgs = get_image(art["id"])
             st.markdown('<div class="card">', unsafe_allow_html=True)
-            if img_path:
-                st.image(str(img_path), use_container_width=True)
+            if imgs:
+                st.image(str(imgs[0]["image_base64"]), use_container_width=True)
             else:
                 st.markdown(no_img_placeholder(190), unsafe_allow_html=True)
             st.markdown(f"""
