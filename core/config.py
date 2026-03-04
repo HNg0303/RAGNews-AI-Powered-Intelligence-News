@@ -6,6 +6,12 @@ class Settings(BaseSettings):
 
     project_name: str = "My Daily RAG Newspaper"
     host: str = "localhost:8000"
+    allow_origins: List[str]
+
+    # External API Key
+    google_api_key: str
+    zilliz_cloud_uri: str
+    zilliz_cloud_api_key: str
 
 setting = Settings()
 

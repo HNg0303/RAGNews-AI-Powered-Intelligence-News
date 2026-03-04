@@ -41,6 +41,7 @@ def get_page_source(url: str, save_path: str = ""):
             with open(save_path, "w", encoding = "utf-8") as f:
                 f.write(html_source)
             print(f"Write HTML with Request Library")
+        teardown(driver)
         return html_source
 
 def download_image(image_url: str, save_path: str):

@@ -1,10 +1,17 @@
 from fastapi import FastAPI
-from fastapi.middleware import Middleware
+from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import setting
+from src.api.router import routers
 
 app = FastAPI(title = setting.project_name)
 
-@app.get("/hello")
-async def start():
-    print(f"Hello, Project set up successfully")
+app.include_router(router = routers)
+
+app.add_middleware(
+        CORSMiddleware,
+        allow_credentials=True,
+        allow_origins=["localhost:3000"],
+        allow_methods=["*"],
+        allow_headers=["*"]
+)
