@@ -6,7 +6,7 @@ from src.api.router import routers
 
 app = FastAPI(title = setting.project_name)
 
-app.include_router(router = routers)
+app.include_router(router = routers, prefix="/api")
 
 app.add_middleware(
         CORSMiddleware,

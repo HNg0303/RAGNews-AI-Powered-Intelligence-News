@@ -79,7 +79,7 @@ def extract_apnews_articles(soup: BeautifulSoup, article_id: str, article_link: 
             if not os.path.exists(f"data/images/{article_id}"):
                 os.makedirs(f"data/images/{article_id}", exist_ok=False)
             download_image(image_url=image_url, save_path=f"data/images/{article_id}/image.jpg")
-        paragraphs = main_content.find(name = "p")
+        paragraphs = main_content.find_all(name = "p")
         for p in paragraphs:
             content += p.text
         article["id"] = article_id
