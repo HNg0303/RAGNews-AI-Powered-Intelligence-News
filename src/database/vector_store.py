@@ -43,7 +43,7 @@ class VectorStore():
             page_content = doc["content"],
             metadata = {
                 "title": doc['title'],
-                "source": doc["src"]
+                "id": doc["src"]
                 }
         ) for doc in articles]
 

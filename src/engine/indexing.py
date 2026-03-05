@@ -9,15 +9,14 @@ raw_news_source = Path("data/raw_news")
 
 def indexing(vector_store: VectorStore):
     articles = []
-    for source_path in tqdm(raw_news_source.iterdir(), desc = "Indexing sources"):
-        source_name = str(source_path).split("/")[-1]
-        for json_file in tqdm(source_path.iterdir(), desc = "Indexing article"):
+    for json_file in tqdm(raw_news_source.iterdir(), desc = "Indexing article"):
+        if json_file.is_file():
             with open(json_file, "r", encoding="utf-8") as f:
                 article = json.load(f)
+            if article:
+                article["src"] = str(json_file.stem)
+                articles.append(article)
 
-            article["src"] = source_name
-            articles.append(article)
-    
     vector_store.add_documents(articles)
     print(f"Indexing successfully !")
 
