@@ -6,7 +6,11 @@ A comprehensive Retrieval-Augmented Generation (RAG) platform that intelligently
 
 RAGNews combines web scraping, vector embeddings, and advanced language models to create an intelligent news retrieval and generation system. The platform automatically collects news articles from major sources, stores them in a high-performance vector database, and provides both REST API and web-based interfaces for querying and analysis.
 
-<video src="RAGNews-Demo.mp4" controls width="100%"></video>
+
+
+https://github.com/user-attachments/assets/538ac9a2-2caf-4b13-bb6d-4a130f3c0e1f
+
+
 
 ### Key Features
 
@@ -390,4 +394,5 @@ This project is licensed under the LICENSE file in the repository. See [LICENSE]
 ---
 
 **Last Updated**: March 2026
+
 **Version**: 1.0.0
