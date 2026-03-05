@@ -25,7 +25,7 @@ async def get_article(article_id: str, response_model = Article):
         "id": article["id"],
         "title": article["title"],
         "content": article["content"],
-        "source": article["source"]
+        "source": article["source"] if "source" in article else ""
     }
 
 @article_router.get("/get_articles")
@@ -73,7 +73,7 @@ async def get_articles(response_model = List[Article]):
             id=art["id"],
             title=art["title"],
             content=art["content"],
-            source=art["source"]
+            source=art["source"] if "source" in art else ""
         ) for art in articles[:7]
     ]
     

@@ -15,7 +15,7 @@ image_router = APIRouter(
 )
 
 @image_router.get("/{article_id}")
-async def get_image(article_id: str, response_model = List[ImageResponse]):
+async def get_image(article_id: str):
     # Current local storage
     image_path = IMAGE_PATH / article_id
     if image_path.exists():
@@ -25,9 +25,7 @@ async def get_image(article_id: str, response_model = List[ImageResponse]):
                 with open(image, "rb") as f:
                     encoded_data.append(base64.b64encode(f.read()).decode("utf-8"))
         return [
-            {
-                "image_base64": f"data:image/jpg;base64,{encoded_string}" for encoded_string in encoded_data
-            }
+                ImageResponse(image_base64 = f"data:image/jpg;base64,{encoded_string}") for encoded_string in encoded_data
         ]
     else: 
         return None

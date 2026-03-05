@@ -79,7 +79,7 @@ def render_chat():
         st.session_state.chat_history.append({"role": "user", "content": user_input})
         with st.spinner("Retrieving context…"):
             reply = get_rag_response(user_input)
-        st.session_state.chat_history.append({"role": "assistant", "content": reply})
+        st.session_state.chat_history.append({"role": "assistant", "content": reply["response"]})
         st.rerun()
 
     # Clear button (only if there's history)

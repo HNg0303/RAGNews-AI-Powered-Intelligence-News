@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Base64Str
+from pydantic import BaseModel
 
 class ImageResponse(BaseModel):
-    image_base64: Base64Str
+    image_base64: str

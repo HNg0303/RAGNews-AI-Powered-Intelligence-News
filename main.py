@@ -21,7 +21,7 @@ async def lifespan(app: FastAPI):
             cloud_api_key=setting.zilliz_cloud_api_key,
             google_api_key=setting.google_api_key
         )
-        indexing(app.state.rag_chain.retriever.vector_store)
+        # indexing(app.state.rag_chain.retriever.vector_store)
         app.state.rag_chain.init_chain()
         print("✅ RAG chain initialized successfully.")
     

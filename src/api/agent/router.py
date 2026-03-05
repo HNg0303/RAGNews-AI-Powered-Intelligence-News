@@ -22,7 +22,7 @@ async def invoke(
     rag_chain = request.app.state.rag_chain
     try:
         answer = rag_chain.invoke(query.prompt)
-        return ResponseModel(answer)
+        return ResponseModel(response = answer)
     except Exception as e:
         return HTTPException(status_code = 500, detail = str(e))
 

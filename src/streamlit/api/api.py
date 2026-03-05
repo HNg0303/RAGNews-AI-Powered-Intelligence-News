@@ -44,7 +44,7 @@ def get_rag_response(query: str, url = "http://localhost:8000/api/agent/invoke")
         "prompt": query 
     }
     try:
-        response = requests.get(url, json = payload)
+        response = requests.post(url, json = payload)
         if response.status_code == 200:
             data = response.json()
             return data

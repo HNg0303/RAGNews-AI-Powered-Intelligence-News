@@ -6,6 +6,8 @@ A comprehensive Retrieval-Augmented Generation (RAG) platform that intelligently
 
 RAGNews combines web scraping, vector embeddings, and advanced language models to create an intelligent news retrieval and generation system. The platform automatically collects news articles from major sources, stores them in a high-performance vector database, and provides both REST API and web-based interfaces for querying and analysis.
 
+<video src="RAGNews-Demo.mp4" controls width="100%"></video>
+
 ### Key Features
 
 - **Multi-Source News Aggregation**: Automated scraping from CNN, AP News, and Financial Press
@@ -164,8 +166,6 @@ RAGNews/
 
 - **Python**: 3.9 or higher
 - **System Requirements**:
-  - 4GB RAM minimum (8GB recommended)
-  - 10GB disk space for articles and images
   - Internet connection for scraping and API calls
 - **External Services**:
   - Milvus/Zilliz Cloud account for vector database

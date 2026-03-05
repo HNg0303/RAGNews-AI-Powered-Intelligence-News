@@ -34,7 +34,7 @@ def render_home():
     imgs = get_image(hero["id"])
     st.markdown('<div class="hero-card">', unsafe_allow_html=True)
     if imgs:
-        st.image(str(imgs[0]["image_base64"]), use_container_width=True)
+        st.image(imgs[0]["image_base64"], use_container_width=True)
     else:
         st.markdown(no_img_placeholder(340, "📰"), unsafe_allow_html=True)
     st.markdown(f"""
