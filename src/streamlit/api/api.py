@@ -38,3 +38,17 @@ def get_article_by_id(article_id: str, url : str = "http://localhost:8000/api/ar
     
     except Exception as e:
         print(f"Error: {e}")
+
+def get_rag_response(query: str, url = "http://localhost:8000/api/agent/invoke"):
+    payload = {
+        "prompt": query 
+    }
+    try:
+        response = requests.get(url, json = payload)
+        if response.status_code == 200:
+            data = response.json()
+            return data
+        else:
+            print(f"Status code: {response.status_code}. Message: {response}")
+    except Exception as e:
+        print(f"Error: {e}")

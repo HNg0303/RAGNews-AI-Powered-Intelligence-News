@@ -1,3 +1,8 @@
+import streamlit as st
+from helper import nav, strip_source
+from api.api import get_rag_response
+
+
 # ── PAGE: CHATBOT ─────────────────────────────────────────────────────────────
 def render_chat():
     art = st.session_state.current_article
@@ -73,7 +78,7 @@ def render_chat():
     if user_input:
         st.session_state.chat_history.append({"role": "user", "content": user_input})
         with st.spinner("Retrieving context…"):
-            reply = rag_agent_response(user_input, art)
+            reply = get_rag_response(user_input)
         st.session_state.chat_history.append({"role": "assistant", "content": reply})
         st.rerun()
 

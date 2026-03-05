@@ -13,6 +13,11 @@ class Settings(BaseSettings):
     zilliz_cloud_uri: str
     zilliz_cloud_api_key: str
 
+    # Models
+    embedding_model: str
+    reranking_model: str
+    chat_model: str
+
 setting = Settings()
 
 if __name__ == "__main__":

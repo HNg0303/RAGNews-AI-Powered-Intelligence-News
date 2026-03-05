@@ -201,6 +201,7 @@ if __name__ == "__main__":
         "apnews": "https://apnews.com",
         "fp": "https://financialpost.com"
     }
+    get_all_articles(all_sources)
     extract_all_articles(all_sources)
 
     
