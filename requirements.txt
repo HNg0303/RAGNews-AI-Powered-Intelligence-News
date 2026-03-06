@@ -19,3 +19,4 @@ cohere
 langchain-google-genai
 python-dotenv
 selenium
+"pymongo[srv]"

@@ -1,6 +1,8 @@
 import requests
 
-def get_articles(url : str = "http://localhost:8000/api/article/get_articles"):
+BACKEND_URL="https://ragnews-ai-powered-intelligence-news.onrender.com"
+
+def get_articles(url : str = f"{BACKEND_URL}/api/article/get_articles"):
     """
         Call API from FastAPI server
     """
@@ -15,7 +17,7 @@ def get_articles(url : str = "http://localhost:8000/api/article/get_articles"):
     except Exception as e:
         print(f"Error: {e}")
 
-def get_image(article_id: str, url : str = "http://localhost:8000/api/image"):
+def get_image(article_id: str, url : str = f"{BACKEND_URL}/api/image"):
     try:
         response = requests.get(f"{url}/{article_id}")
         if response.status_code==200:
@@ -27,7 +29,7 @@ def get_image(article_id: str, url : str = "http://localhost:8000/api/image"):
     except Exception as e:
         print(f"Error: {e}")
 
-def get_article_by_id(article_id: str, url : str = "http://localhost:8000/api/article/get_article"):
+def get_article_by_id(article_id: str, url : str = f"{BACKEND_URL}/api/article/get_article"):
     try:
         response = requests.get(f"{url}/{article_id}")
         if response.status_code==200:
@@ -39,7 +41,7 @@ def get_article_by_id(article_id: str, url : str = "http://localhost:8000/api/ar
     except Exception as e:
         print(f"Error: {e}")
 
-def get_rag_response(query: str, url = "http://localhost:8000/api/agent/invoke"):
+def get_rag_response(query: str, url = f"{BACKEND_URL}/api/agent/invoke"):
     payload = {
         "prompt": query 
     }

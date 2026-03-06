@@ -9,7 +9,7 @@ RAGNews combines web scraping, vector embeddings, and advanced language models t
 
 
 https://github.com/user-attachments/assets/538ac9a2-2caf-4b13-bb6d-4a130f3c0e1f
-
+You can try the demo website at: 
 
 
 ### Key Features
