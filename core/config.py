@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     reranking_model: str
     chat_model: str
 
+    # MongoDB
+    mongo_uri: str
+    mongo_db_name: str
+
 setting = Settings()
 
 if __name__ == "__main__":

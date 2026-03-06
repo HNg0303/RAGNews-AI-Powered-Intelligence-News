@@ -6,11 +6,21 @@ from src.engine.engine import RAGChain
 from core.config import setting
 from src.api.router import routers
 from src.engine.indexing import indexing
+from src.database.mongo_client import get_collection, insert_data
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # --- Startup Logic ---
     # This runs ONCE when the server starts
+    if not hasattr(app.state, "db"):
+        print("Connecting to database")
+        app.state.db = get_collection(
+            collection_name="Articles",
+            MONGO_URI=setting.mongo_uri,
+            MONGO_DB_NAME=setting.mongo_db_name
+        )
+        insert_data(app.state.db)
+        print(f"Indexing database successfully")
     if not hasattr(app.state, "rag_chain"):
         print("🚀 Initializing RAG chain and loading models...")
         app.state.rag_chain = RAGChain(

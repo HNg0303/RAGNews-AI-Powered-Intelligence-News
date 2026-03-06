@@ -15,12 +15,10 @@ article_router = APIRouter(
     tags=["article"]
 )
 
-@article_router.get("/get_article/{article_id}")
-async def get_article(article_id: str, response_model = Article):
+@article_router.get("/get_article/{article_id}", response_model = Article)
+async def get_article(article_id: str, db):
     # Current local storage
-    article_path =  ARTICLES_PATH / article_id
-    with open(f"{str(article_path)}.json", "r", encoding = "utf-8") as f:
-        article = json.load(f)
+    article = db.find({"id": article_id})
     return {
         "id": article["id"],
         "title": article["title"],
