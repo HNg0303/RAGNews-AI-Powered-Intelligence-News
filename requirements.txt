@@ -20,3 +20,4 @@ langchain-google-genai
 python-dotenv
 selenium
 "pymongo[srv]"
+cloudinary

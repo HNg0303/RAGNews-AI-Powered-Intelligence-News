@@ -3,7 +3,7 @@ from pathlib import Path
 import json
 from tqdm import tqdm
 
-import base64
+from src.database.cloudinary_client import upload_to_cloudinary, get_client
 
 DATA_PATH = Path("data/raw_news")
 IMAGE_PATH = Path("data/images")
@@ -35,18 +35,19 @@ def insert_data(db):
 def add_image_data(db):
     for image_dir in tqdm(IMAGE_PATH.iterdir(), desc = "Adding Image data"):
         article_id = image_dir.stem
-        images = []
+        image_urls = []
         for image_file in image_dir.iterdir():
             if image_file.is_file():
-                with open(image_file, "rb") as f:
-                     images.append(base64.b64encode(f.read()).decode("utf-8"))
+                url = upload_to_cloudinary(file_path=str(image_file), article_id = article_id)
+                if url:
+                    image_urls.append(url)
         query_filter = {
             "id": article_id
         }
         update = {
             "$set": 
             {
-                "images": [f"data:image/jpg;base64,{encoded_string}" for encoded_string in images] if images else ""
+                "images": image_urls if image_urls else ""
             }
         }
         db.update_one(query_filter, update)
@@ -71,8 +72,13 @@ if __name__ == "__main__":
     MONGO_URI = os.getenv("MONGO_URI")
     MONGO_DB_NAME = os.getenv("MONGO_DB_NAME")
 
+    CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME")
+    CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY")
+    CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET")
+
     db = get_collection(collection_name="Articles", MONGO_URI=MONGO_URI, MONGO_DB_NAME=MONGO_DB_NAME)
     # insert_data(db)
     # add_image_data(db)
-    delete_field(db, "images")
-        
+    get_client(CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET)
+    add_image_data(db)
+    
