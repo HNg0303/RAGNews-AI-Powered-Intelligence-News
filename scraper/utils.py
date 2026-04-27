@@ -4,6 +4,10 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options 
 
+"""
+SET UP DRIVER
+"""
+
 def set_up(url: str):
     user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
     # Create Chrome options
@@ -22,6 +26,8 @@ def teardown(driver: webdriver):
 def get_response(url: str) -> str:
     html_response = requests.get(url).text
     return html_response
+
+###### SYNCHRONOUS NEWS SCRAPING ######
 
 def get_page_source(url: str, save_path: str = ""):
     try:
@@ -59,4 +65,4 @@ def parse_soup(url: str) -> BeautifulSoup:
         soup = BeautifulSoup(html_response, 'html.parser')
         return soup
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error: {e}")       

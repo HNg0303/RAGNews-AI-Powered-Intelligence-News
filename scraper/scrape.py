@@ -1,9 +1,14 @@
-from utils import parse_soup, download_image
+from async_utils import fetch_soup, download_image
 from bs4 import BeautifulSoup
 import json
 from typing import List, Dict
 from tqdm import tqdm
 import os
+import asyncio
+import aiohttp
+import aiofiles
+
+#### 1. Get articles link #####
 
 def get_cnn_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
     articles = []
@@ -27,32 +32,6 @@ def get_cnn_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
                         print("No attributes")
     return articles
 
-def extract_cnn_articles(article_soup: BeautifulSoup, article_id: str, article_link: str) -> Dict:
-    articles = {}
-    try: 
-        article_title = article_soup.find("title").text
-        main_content = article_soup.find(name = "main", class_ = "article__main")
-        article_images = main_content.find_all(name = "div", attrs={"data-component-name": "image"})
-        # Download Image
-        if not os.path.exists(f"data/images/{article_id}"):
-            os.makedirs(f"data/images/{article_id}")
-        for i, image in enumerate(article_images):
-            image_url = image.get("data-url")
-            print(f"Image URL: {image_url}")
-            download_image(image_url, f"data/images/{article_id}/image_{i}.jpg")
-        article_paragraphs = main_content.find_all(name = "p", attrs={"data-component-name": "paragraph"})
-        article_content = ""
-        for paragraph in article_paragraphs:
-            article_content += paragraph.text
-        articles["id"] =  article_id
-        articles["title"] = article_title
-        articles["content"] = article_content
-        articles["source"] = article_link
-        return articles
-    except:
-        print("Article not approriate !")
-        return None
-
 def get_apnews_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
     articles = []
     subheader_top_stories = soup.find_all(name = "div", class_ = "Subheader-Top-Stories")
@@ -65,30 +44,7 @@ def get_apnews_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
                 "article_link": article_link,
                 "title": story.text
             })
-    return articles
-
-def extract_apnews_articles(soup: BeautifulSoup, article_id: str, article_link: str):
-    article = {}
-    try:
-        content = ""
-        page_content = soup.find(name = "div", class_ = "Page-content")
-        title = page_content.find(name = "h1", class_ = "Page-headline").text
-        main_content = page_content.find(name = "div", class_ = "Page-twoColumn")
-        image_url = main_content.find(name = "img").get("src")
-        if image_url:
-            if not os.path.exists(f"data/images/{article_id}"):
-                os.makedirs(f"data/images/{article_id}", exist_ok=False)
-            download_image(image_url=image_url, save_path=f"data/images/{article_id}/image.jpg")
-        paragraphs = main_content.find_all(name = "p")
-        for p in paragraphs:
-            content += p.text
-        article["id"] = article_id
-        article["title"] = title
-        article["content"] = content
-        article["source"] = article_link
-        return article
-    except Exception as e:
-        print(f"Error: {e}")
+    return 
 
 def get_fp_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
     articles = []
@@ -108,30 +64,101 @@ def get_fp_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
     except Exception as e:
         print(f"Error: {e}")
 
-def extract_fp_articles(article_soup: BeautifulSoup):
-    articles = {}
-    try:
-        main_content = article_soup.find(name = "main", id = "main-content")
-        content = ""
+"""
+#### 2. Content Extractor #####
+"""
 
-        header_content =  main_content.find(name = "div", class_ = "story-v2")
-        id = header_content.find(name = "article").get("data-wcm-id")
-        title = header_content.find(name = "h1").text
-        subtitle = header_content.find(name = "p").text
+async def extract_cnn_articles(session: aiohttp.ClientSession, article: dict, sem: asyncio.Semaphore) -> Dict[str, str]:
+    async with sem: ## Semaphore for limit concurrency
+        article_soup = await fetch_soup(session, article["article_link"])
+        if not article_soup:
+            return None
+        try: 
+            article_title = article_soup.find("title").text
+            main_content = article_soup.find(name = "main", class_ = "article__main")
+            article_images = main_content.find_all(name = "div", attrs={"data-component-name": "image"})
+            # Download Image
+            img_dir = f"data/images/{article["id"]}"
+            if not os.path.exists(img_dir):
+                os.makedirs(img_dir, exist_ok = True)
+            image_tasks = []
+            for i, image in enumerate(article_images):
+                image_url = image.get("data-url")
+                if image_url:
+                    await image_tasks.append(download_image(session, image_url, f"{img_dir}/image_{i}.jpg")) # Async function
+            await asyncio.gather(*image_tasks) # Await for download all images at once
+            article_paragraphs = main_content.find_all(name = "p", attrs={"data-component-name": "paragraph"})
+            article_content = ""
+            for paragraph in article_paragraphs:
+                article_content += paragraph.text
+            return {
+                "id" :  article["id"],
+                "title": article_title,
+                "content": article_content,
+                "source": article["article_link"]
+            }
+        except Exception as e:
+            print(f"Encounter error while extracting CNN Article: {e}")
+            return None
 
-        article_content = main_content.find(name = "div", class_ = "story-v2-block-content")
-        paragraphs = article_content.find_all("p")
-        for p in paragraphs:
-            content += p.text
-        
-        articles["id"] = id
-        articles["title"] = title
-        articles["subtitle"] = subtitle
-        articles["content"] = content
+async def extract_apnews_articles(session: aiohttp.ClientSession, article: dict, sem: asyncio.Semaphore) -> Dict[str, str]:
+    async with sem: ## Semaphore for limit concurrency
+        soup = await fetch_soup(session, article["article_link"])
+        if not soup:
+            return None
+        try:
+            content = ""
+            page_content = soup.find(name = "div", class_ = "Page-content")
+            title = page_content.find(name = "h1", class_ = "Page-headline").text
+            main_content = page_content.find(name = "div", class_ = "Page-twoColumn")
+            image_url = main_content.find(name = "img").get("src")
+            img_dir = f"data/images/{article["id"]}"
+            if not os.path.exists(img_dir):
+                os.makedirs(img_dir, exist_ok = True)
+            if image_url:
+                await download_image(session, image_url, f"{img_dir}/image.jpg")# Async function
+            paragraphs = main_content.find_all(name = "p")
+            for p in paragraphs:
+                content += p.text
+            return {
+                "id" :  article["id"],
+                "title": title,
+                "content": content,
+                "source": article["article_link"]
+            }
+        except Exception as e:
+            print(f"Encounter error while extracting APNews Article: {e}")
+            return None
 
-        return articles
-    except Exception as e:
-        print(f"Error: {e}")
+async def extract_fp_articles(session: aiohttp.ClientSession, article: dict, sem: asyncio.Semaphore) -> Dict[str, str]:
+     async with sem: ## Semaphore for limit concurrency
+        article_soup = await fetch_soup(session, article["article_link"])
+        if not article_soup:
+            return None
+        try:
+            main_content = article_soup.find(name = "main", id = "main-content")
+            content = ""
+
+            header_content =  main_content.find(name = "div", class_ = "story-v2")
+            id = header_content.find(name = "article").get("data-wcm-id")
+            title = header_content.find(name = "h1").text
+            subtitle = header_content.find(name = "p").text
+
+            article_content = main_content.find(name = "div", class_ = "story-v2-block-content")
+            paragraphs = article_content.find_all("p")
+            for p in paragraphs:
+                content += p.text
+            
+            return {
+                "id": id,
+                "title": title,
+                "subtitle": subtitle,
+                "content": content,
+                "source": article["article_link"]
+            }
+        except Exception as e:
+            print(f"Encounter error while extracting Finanical Post Article: {e}")
+            return None
 
 def get_all_articles(urls: dict[str, str]):
     """
