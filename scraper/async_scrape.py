@@ -99,4 +99,6 @@ async def main():
         await get_all_content(session, all_links)
 
 if __name__ == "__main__":
+    for dir_path in ["data/general", "data/finance", "data/images", "data/raw_news"]:
+        os.makedirs(dir_path, exist_ok=True)
     asyncio.run(main())
