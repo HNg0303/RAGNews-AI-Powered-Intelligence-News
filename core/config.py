@@ -18,9 +18,18 @@ class Settings(BaseSettings):
     reranking_model: str
     chat_model: str
 
-    # MongoDB
-    mongo_uri: str
-    mongo_db_name: str
+    # PostgreSQL
+    postgres_server: str
+    postgres_port: int
+    postgres_db: str
+    postgres_user: str
+    postgres_password: str
+
+    # Cloudinary
+    cloudinary_cloud_name: str
+    cloudinary_api_key: str
+    cloudinary_api_secret: str
+
 
 setting = Settings()
 
