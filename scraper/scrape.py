@@ -1,4 +1,4 @@
-from async_utils import fetch_soup, download_image
+from scraper.async_utils import fetch_soup, download_image
 from bs4 import BeautifulSoup
 import json
 from typing import List, Dict
@@ -10,7 +10,9 @@ import aiofiles
 
 #### 1. Get articles link #####
 
-def get_cnn_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
+async def get_cnn_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
+    if not soup:
+        return []
     articles = []
     # Search by attrs: traditional like href, link, ... While new attrs like data-* is processed below
     main_container = soup.find_all(name = "div", attrs= {"data-component-name": "container"}) 
@@ -32,7 +34,9 @@ def get_cnn_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
                         print("No attributes")
     return articles
 
-def get_apnews_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
+async def get_apnews_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
+    if not soup:
+        return []
     articles = []
     subheader_top_stories = soup.find_all(name = "div", class_ = "Subheader-Top-Stories")
     for top_stories in tqdm(subheader_top_stories, desc = "Crawling APNews Stories"):
@@ -46,17 +50,20 @@ def get_apnews_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
             })
     return 
 
-def get_fp_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
+async def get_fp_articles(soup: BeautifulSoup, url: str) -> List[Dict[str, str]]:
+    if not soup:
+        return []
     articles = []
     try:
         article_card = soup.find_all(name = "div", class_ = "article-card__details")
         for card in tqdm(article_card, desc = "Crawling FinancialPost articles"):
+            article_id = card.parent.parent.get("data-article-id")
             article_related = card.find(name = "a", class_ = "article-card__link")
             if article_related:
                 article_link = article_related.get("href")
                 article_title = article_related.get("aria-label")
                 articles.append({
-                    "id": card.parent.get("data-article-id"),
+                    "id": article_id if article_id else article_title,
                     "article_link": url + article_link,
                     "title": article_title  
                 })
@@ -78,14 +85,17 @@ async def extract_cnn_articles(session: aiohttp.ClientSession, article: dict, se
             main_content = article_soup.find(name = "main", class_ = "article__main")
             article_images = main_content.find_all(name = "div", attrs={"data-component-name": "image"})
             # Download Image
-            img_dir = f"data/images/{article["id"]}"
+            article_id = article["id"]
+            img_dir = f"data/images/{article_id}"
             if not os.path.exists(img_dir):
                 os.makedirs(img_dir, exist_ok = True)
             image_tasks = []
+            image_urls = []
             for i, image in enumerate(article_images):
                 image_url = image.get("data-url")
                 if image_url:
-                    await image_tasks.append(download_image(session, image_url, f"{img_dir}/image_{i}.jpg")) # Async function
+                    image_tasks.append(download_image(session, image_url, f"{img_dir}/image_{i}.jpg")) # Async function. This appends and gathers all tasks.
+                    image_urls.append(f"{img_dir}/image_{i}.jpg")
             await asyncio.gather(*image_tasks) # Await for download all images at once
             article_paragraphs = main_content.find_all(name = "p", attrs={"data-component-name": "paragraph"})
             article_content = ""
@@ -94,8 +104,10 @@ async def extract_cnn_articles(session: aiohttp.ClientSession, article: dict, se
             return {
                 "id" :  article["id"],
                 "title": article_title,
+                "subtitle": article_title,
                 "content": article_content,
-                "source": article["article_link"]
+                "source": article["article_link"],
+                "local_image_url": image_urls[0]
             }
         except Exception as e:
             print(f"Encounter error while extracting CNN Article: {e}")
@@ -112,7 +124,8 @@ async def extract_apnews_articles(session: aiohttp.ClientSession, article: dict,
             title = page_content.find(name = "h1", class_ = "Page-headline").text
             main_content = page_content.find(name = "div", class_ = "Page-twoColumn")
             image_url = main_content.find(name = "img").get("src")
-            img_dir = f"data/images/{article["id"]}"
+            article_id = article["id"]
+            img_dir = f"data/images/{article_id}"
             if not os.path.exists(img_dir):
                 os.makedirs(img_dir, exist_ok = True)
             if image_url:
@@ -145,6 +158,12 @@ async def extract_fp_articles(session: aiohttp.ClientSession, article: dict, sem
             subtitle = header_content.find(name = "p").text
 
             article_content = main_content.find(name = "div", class_ = "story-v2-block-content")
+            featured_image_url = main_content.find(name = "img", class_ = "featured-image__image type:primaryImage").get("src")
+            img_dir = f"data/images/{id}"
+            if not os.path.exists(img_dir):
+                os.makedirs(img_dir, exist_ok = True)
+            if featured_image_url:
+                await download_image(session, featured_image_url, f"{img_dir}/image.jpg")# Async function
             paragraphs = article_content.find_all("p")
             for p in paragraphs:
                 content += p.text
@@ -154,7 +173,8 @@ async def extract_fp_articles(session: aiohttp.ClientSession, article: dict, sem
                 "title": title,
                 "subtitle": subtitle,
                 "content": content,
-                "source": article["article_link"]
+                "source": article["article_link"],
+                "local_image_url": f"{img_dir}/image.jpg"
             }
         except Exception as e:
             print(f"Encounter error while extracting Finanical Post Article: {e}")

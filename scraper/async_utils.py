@@ -14,7 +14,7 @@ async def fetch_soup(session: aiohttp.ClientSession, url: str) -> BeautifulSoup:
         async with session.get(url = url, headers = headers) as response:
             response.raise_for_status()
             html = await response.text() # This where the function is asynchronous -> It has to wait for response
-            return BeautifulSoup(html, "html_parser")
+            return BeautifulSoup(html, "html.parser")
     except Exception as e:
         print(f"Error while fetching {url}: {e}")
         return None
@@ -35,10 +35,8 @@ async def save_json(data: dict, save_path: str):
     """
         JSON Helper write asynchronously.
     """
-    if not os.path.exists(save_path):
-        os.makedirs(save_path, exist_ok = True)
     async with aiofiles.open(save_path, "w", encoding='utf-8') as f:
-        await f.write(json.dump(data, f, indent = 4, ensure_ascii=False))
+        await f.write(json.dumps(data, indent = 4, ensure_ascii=False))
 
 
 

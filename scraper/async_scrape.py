@@ -5,7 +5,8 @@ import aiofiles
 import aiohttp
 import os
 from typing import List, Dict
-import tqdm.asyncio as tqdm
+import tqdm.asyncio as tqdm_async
+from tqdm import tqdm
 
 
 ########################
@@ -21,19 +22,20 @@ async def get_all_links(session: aiohttp.ClientSession, sources: Dict[str, str])
     """
     print(f"Fetching all links from sources ...")
     try:
-        soup = asyncio.gather(
+        soup = await asyncio.gather(
             fetch_soup(session, sources["cnn"]), 
             fetch_soup(session, sources["apnews"]), 
             fetch_soup(session, sources["fp"]), 
         )
-        cnn_links = get_cnn_articles(soup[0], sources["cnn"])
-        ap_links = get_apnews_articles(soup[1], sources["apnews"])
-        fp_links = get_fp_articles(soup[2], sources["fp"])
 
-        asyncio.gather(
+        cnn_links = await get_cnn_articles(soup[0], sources["cnn"])
+        ap_links = await get_apnews_articles(soup[1], sources["apnews"])
+        fp_links = await get_fp_articles(soup[2], sources["fp"])
+
+        await asyncio.gather(
             save_json(cnn_links, "data/general/cnn.json"),
-            save_json(cnn_links, "data/general/apnews.json"),
-            save_json(cnn_links, "data/general/fp.json"),
+            save_json(ap_links, "data/general/apnews.json"),
+            save_json(fp_links, "data/general/fp.json"),
         )
         return {
             "cnn": cnn_links,
@@ -42,7 +44,7 @@ async def get_all_links(session: aiohttp.ClientSession, sources: Dict[str, str])
         }
     except Exception as e:
         print(f"Error fetching links: {e}")
-        return 
+        return None
     
 ###############
 # 2. Content extraction
@@ -57,17 +59,17 @@ async def get_all_content(session: aiohttp.ClientSession, all_links: Dict[str, L
     tasks = []
     
     # Queue up CNN tasks
-    for article in all_links["cnn"]:
+    for article in tqdm(all_links["cnn"], desc="Gathering CNN Extraction tasks"):
         if not os.path.exists(f"data/raw_news/{article['id']}.json"):
-            tasks.append(extract_cnn_articles(session, article, sem))
+            tasks.append(extract_cnn_articles(session, article, sem)) #Gathering couroutines not executing it with await.
             
-    # Queue up APNews tasks
-    for article in all_links["apnews"]:
-        if not os.path.exists(f"data/raw_news/{article['id']}.json"):
-            tasks.append(extract_apnews_articles(session, article, sem))
+    # # Queue up APNews tasks
+    # for article in all_links["apnews"]:
+    #     if not os.path.exists(f"data/raw_news/{article['id']}.json"):
+    #         tasks.append(await extract_apnews_articles(session, article, sem))
             
     # Queue up FP tasks
-    for article in all_links["fp"]:
+    for article in tqdm(all_links["fp"], desc = "Gathering all Financial Post"):
         if not os.path.exists(f"data/raw_news/{article['id']}.json"):
             tasks.append(extract_fp_articles(session, article, sem))
 
@@ -86,6 +88,7 @@ async def get_all_content(session: aiohttp.ClientSession, all_links: Dict[str, L
     if save_tasks:
         await asyncio.gather(*save_tasks)
     print("Saved all new articles!")
+    return results
 
 async def main():
     sources = {
@@ -96,6 +99,9 @@ async def main():
     # Share a single connection pool session across the entire script
     async with aiohttp.ClientSession() as session:
         all_links = await get_all_links(session, sources)
+        if all_links is None:
+            print(f"Cannot scrape links !")
+            return
         await get_all_content(session, all_links)
 
 if __name__ == "__main__":
