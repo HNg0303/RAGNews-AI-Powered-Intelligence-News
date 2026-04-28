@@ -16,7 +16,7 @@ class Retriever():
         self.reranker = CrossEncoderReranker(model=HuggingFaceCrossEncoder(model_name = reranking_model), top_n = 5)
         self.compressor_retriever = ContextualCompressionRetriever(
             base_compressor=self.reranker,
-            base_retriever=self.vector_store.vector_store.as_retriever(search_kwargs={"k": 10})
+            base_retriever=self.vector_store.vector_store.as_retriever(search_kwargs={"k": 20})
         )
 
     def retrieve(self, query: str) -> list[Document]:
