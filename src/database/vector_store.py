@@ -43,9 +43,9 @@ class VectorStore():
             page_content = doc["content"],
             metadata = {
                 "title": doc['title'],
-                "id": doc["src"]
+                "id": doc["id"]
                 }
-        ) for doc in articles]
+        ) for doc in articles if doc is not None]
 
         all_splits = self.text_splitter.split_documents(documents)
 

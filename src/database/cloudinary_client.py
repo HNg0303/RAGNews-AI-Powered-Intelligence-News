@@ -9,8 +9,9 @@ def get_client(cloudinary_cloud_name: str, cloudinary_api_key: str, cloudinary_a
         api_secret = cloudinary_api_secret,
         secure = True
     )
+    return cloudinary
 
-def upload_to_cloudinary(file_path, article_id):
+def upload_to_cloudinary(cloudinary: cloudinary.Config, file_path, article_id):
     """Uploads a local image and returns its public URL."""
     try:
         response = cloudinary.uploader.upload(
@@ -24,3 +25,4 @@ def upload_to_cloudinary(file_path, article_id):
     except Exception as e:
         print(f"Cloudinary Upload Failed: {e}")
         return None
+    
