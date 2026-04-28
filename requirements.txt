@@ -23,3 +23,7 @@ selenium
 cloudinary
 aiohttp
 aiofiles
+langgraph
+python-dotenv
+sqlalchemy
+asyncpg
