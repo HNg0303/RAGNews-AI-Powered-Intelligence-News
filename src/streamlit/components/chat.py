@@ -1,11 +1,13 @@
 import streamlit as st
 from helper import nav, strip_source
-from api.api import get_rag_response
+from api.api import rag_chat, get_article_by_id, MOCK_USER_ID
 
 
 # ── PAGE: CHATBOT ─────────────────────────────────────────────────────────────
 def render_chat():
-    art = st.session_state.current_article
+    art = None
+    if st.session_state.get("current_article_id"):
+        art = get_article_by_id(st.session_state.current_article_id)
 
     # Nav bar
     c1, c2, _ = st.columns([2, 2, 8])
@@ -78,8 +80,8 @@ def render_chat():
     if user_input:
         st.session_state.chat_history.append({"role": "user", "content": user_input})
         with st.spinner("Retrieving context…"):
-            reply = get_rag_response(user_input)
-        st.session_state.chat_history.append({"role": "assistant", "content": reply["response"]})
+            reply = rag_chat(user_input, MOCK_USER_ID, st.session_state.current_article_id if st.session_state.current_article_id else None)
+        st.session_state.chat_history.append({"role": "assistant", "content": reply["answer"]})
         st.rerun()
 
     # Clear button (only if there's history)

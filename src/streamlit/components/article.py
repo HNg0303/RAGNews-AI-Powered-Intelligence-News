@@ -24,7 +24,7 @@ def render_article():
             nav("chat", article_id=article_id); st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
-    imgs_objs = get_image(art["id"])
+    imgs_objs = get_image(art["article_id"])
     imgs = [img["image_base64"] for img in imgs_objs]
     title   = strip_source(art["title"])
 

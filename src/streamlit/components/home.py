@@ -31,7 +31,7 @@ def render_home():
     rest = articles[1:]
 
     # ── Hero ──
-    imgs = get_image(hero["id"])
+    imgs = get_image(hero["article_id"])
     st.markdown('<div class="hero-card">', unsafe_allow_html=True)
     if imgs:
         st.image(imgs[0]["image_base64"], use_container_width=True)
@@ -47,7 +47,7 @@ def render_home():
     st.markdown('</div>', unsafe_allow_html=True)
 
     if st.button("Read full story →", key="hero_btn"):
-        nav("article", hero["id"])
+        nav("article", hero["article_id"])
         st.rerun()
 
     # ── More Stories ──
