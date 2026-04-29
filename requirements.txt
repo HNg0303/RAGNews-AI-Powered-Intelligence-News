@@ -19,7 +19,6 @@ cohere
 langchain-google-genai
 python-dotenv
 selenium
-"pymongo[srv]"
 cloudinary
 aiohttp
 aiofiles
