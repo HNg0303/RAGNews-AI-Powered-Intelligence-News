@@ -25,7 +25,6 @@ AsyncSessionLocal = async_sessionmaker(
 class Base(DeclarativeBase):
     pass
 
-
 # ── Dependency / context manager ─────────────────────────────────────────────
 async def get_db() -> AsyncSession:
     """

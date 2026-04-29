@@ -19,11 +19,8 @@ class RoleEnum(str, Enum):
 
 class CitationSchema(BaseModel):
     """Single inline citation attached to an AI message."""
-    article_id: UUID
+    article_id: str
     title:      str
-    url:        str
-    source:     Optional[str] = None
-    score:      Optional[float] = Field(None, ge=0.0, le=1.0)
 
 
 class MessageMeta(BaseModel):
