@@ -763,12 +763,25 @@ def _ai_panel(art_id: str):
     raw_summary = ins.get("summary") or ins.get("answer") or "Summary not available."
     summary = str(raw_summary).replace("\n", "<br><br>")
 
-    kps = ins.get("insights") or []
+    kps_raw = ins.get("insights") or []
     related = ins.get("related") or []
 
+    # Normalize key points: the service may return either a list of points or a single
+    # string (paragraph or newline/bullet separated). Avoid iterating a string
+    # directly which would produce one character per element.
+    if isinstance(kps_raw, str):
+        # Split by newlines and common bullet markers, keep non-empty lines
+        lines = [ln.strip(' \t\n\r•-') for ln in kps_raw.splitlines() if ln.strip()]
+        kps = lines if lines else [kps_raw.strip()]
+    elif isinstance(kps_raw, list):
+        kps = kps_raw
+    else:
+        kps = [str(kps_raw)]
+
     # 2. Build the Key Points and Related HTML strings
+    newline = "\n"
     kps_html = "".join(
-        f'<div class="kp"><div class="kp-dot"></div><div class="kp-txt">{str(kp)}</div></div>'
+        f'<div class="kp"><div class="kp-dot"></div><div class="kp-txt">{str(kp).replace(newline, "<br>")}</div></div>'
         for kp in kps
     )
     
