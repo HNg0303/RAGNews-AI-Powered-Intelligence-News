@@ -140,23 +140,25 @@ def make_summarize_tool(db: AsyncSession):
 # ══════════════════════════════════════════════════════════════════════════════
  
 SYSTEM_PROMPT = """You are RAGNews Assistant, an intelligent news agent.
- 
+
 Your capabilities:
 - Answer questions about current news using retrieved articles.
 - Summarize specific articles on demand.
 - Answer questions scoped to a single article the user is reading.
- 
+
 Rules:
-1. ALWAYS use retrieve_all_docs for general questions (homepage mode).
-2. ALWAYS use retrieve_docs_by_article when article_id context is provided (article mode).  
-3. ALWAYS call summarize_article when a user opens a new article page.
-4. Base your answers ONLY on retrieved content — never hallucinate facts.
-5. When citing sources, include the article title and source name.
-6. If no relevant documents are found, say so clearly.
- 
+1. Use retrieval and database tools only when they are necessary to answer the user's question.
+    For trivial conversational queries (greetings, brief chit-chat, or simple acknowledgements),
+    answer directly without calling external tools.
+2. When in article mode and the user requests article-specific insight, call `summarize_article`
+    (or use the summarization flow) to produce a concise summary.
+3. Base answers on retrieved content when retrieval is used — do not hallucinate facts.
+4. When citing sources, include the article title and source name.
+5. If no relevant documents are found, say so clearly.
+
 Response format for QnA:
-- Answer the question directly and concisely
-- End with: "Sources: [Title — Source]" for each article used
+- Answer the question directly and concisely.
+- If sources were used, end with: "Sources: [Title — Source]" for each article used.
 """
  
  
@@ -178,18 +180,22 @@ class RAGService:
         self._llm = chat_model
         self._static_tools = [retrieve_all_docs]
  
-    def _build_agent(self, db: AsyncSession):
+    def _build_agent(self, db: AsyncSession, use_tools: bool = True):
         """
         Build a fresh agent per request — injects DB-aware summarize tool.
         LangGraph ReAct agent handles tool calling loop automatically.
         """
-        tools = self._static_tools + [make_summarize_tool(db), make_retrieve_tool(db)]
+        if use_tools:
+            tools = self._static_tools + [make_summarize_tool(db), make_retrieve_tool(db)]
+        else:
+            tools = []
+
         agent = create_agent(
             model=self._llm,
             tools=tools,
             system_prompt=SYSTEM_PROMPT,          # system prompt injected here
         )
-        print(f"Agent created with {tools}")
+        print(f"Agent created (use_tools={use_tools}) with {tools}")
         return agent
     
     async def gather_insights(
@@ -234,7 +240,8 @@ class RAGService:
         )
 
         # ── 4. Run agent ──────────────────────────────────────────────────────
-        agent = self._build_agent(db)
+        # gather_insights always needs retrieval and summarization tools
+        agent = self._build_agent(db, use_tools=True)
         agent_input = {"messages": [HumanMessage(content=prompt)]}
         result = await agent.ainvoke(agent_input)
 
@@ -313,8 +320,17 @@ class RAGService:
             "messages": history + [HumanMessage(content=agent_question)]
         }
  
-        # ── 4. Run agent ──────────────────────────────────────────────────────
-        agent = self._build_agent(db) # DB-aware agent to prevent global database state.
+        # ── 4. Decide whether to use tools and run agent ─────────────────────
+        import re
+
+        interrogative = re.search(r'\b(who|what|when|where|why|how|explain|summarize|describe|list|compare|why is|what is)\b', question or "", re.I)
+
+        # Heuristic: short conversational queries without interrogative words -> no tools
+        use_tools = True
+        if (not interrogative) and (len((question or "").strip()) < 20) and (not article_id):
+            use_tools = False
+
+        agent = self._build_agent(db, use_tools=use_tools) # DB-aware agent to prevent global database state.
         result = await agent.ainvoke(agent_input)
  
         # ── 5. Extract AI response and citations ──────────────────────────────
