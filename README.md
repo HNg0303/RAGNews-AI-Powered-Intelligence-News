@@ -6,7 +6,9 @@ A production-grade, stateful Retrieval-Augmented Generation (RAG) platform that 
 
 RAGNews bridges the gap between raw, multi-source news streams and actionable intelligence. Moving beyond standard semantic search, the system utilizes an AI Agent equipped with specific tools (Retrieval, Database Operations, and Summarization) to dynamically route queries and synthesize information. The backend is powered by a robust asynchronous ingestion pipeline that seamlessly routes text to PostgreSQL and Milvus, while handling media via Cloudinary.
 
-**Live Demo:** [https://ragnews.streamlit.app](https://ragnews.streamlit.app)
+https://github.com/user-attachments/assets/176de619-2f1e-46cb-afbe-d656d3355937
+
+
 
 ## ✨ Key Features
 
